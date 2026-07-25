@@ -1,7 +1,7 @@
 package com.example.financial.management.service;
 
+import com.example.financial.management.config.JwtService;
 import com.example.financial.management.dto.auth.AuthResponse;
-import com.example.financial.management.dto.auth.LoginRequest;
 import com.example.financial.management.entity.User;
 import com.example.financial.management.repository.AuthRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,40 +11,45 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
-    public String register(String name,String email, String password){
-        if(authRepository.existsByEmail(email)){
-            throw  new RuntimeException("User already exists");
+    public AuthResponse register(String name, String email, String password) {
+
+        if (authRepository.existsByEmail(email)) {
+            throw new RuntimeException("El usuario ya existe");
         }
 
         User user = new User();
-        String passwordBy = passwordEncoder.encode(password);
-
         user.setName(name);
         user.setEmail(email);
-        user.setPassword(passwordBy);
+        user.setPassword(passwordEncoder.encode(password));
 
         authRepository.save(user);
 
-        return "User created correctly";
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponse(token);
     }
 
 
     public AuthResponse login(String email, String password) {
 
         User user = authRepository.findByEmail(email)
-                .orElseThrow(()-> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new RuntimeException("Contraseña incorrecta");
         }
 
-        return null;
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponse(token);
     }
 
 
