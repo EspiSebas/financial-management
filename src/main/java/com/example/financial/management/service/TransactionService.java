@@ -36,6 +36,8 @@ public class TransactionService {
         transaction.setAmount(amount);
         transaction.setDate(date);
         transaction.setType(type);
+
+        System.out.println(categoryId);
         Category category = categoryRepository.findById(categoryId)
                         .orElseThrow(()-> new RuntimeException("Category not found"));
 

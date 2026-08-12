@@ -12,4 +12,7 @@ public class Category {
     private Long id ;
     private String name;
     private String type;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

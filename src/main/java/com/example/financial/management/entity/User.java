@@ -21,5 +21,8 @@ public class User {
     private String password;
 
     @OneToMany(mappedBy = "user")
+    private List<Category> categories;
+
+    @OneToMany(mappedBy = "user")
     private List<Transaction> transactions;
 }
